@@ -8,9 +8,14 @@ export default class Auth {
       domain: process.env.REACT_APP_AUTH0_DOMAIN,
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
       redirect_uri: process.env.REACT_APP_AUTH0_REDIRECT_URI,
+      audience: process.env.REACT_APP_AUTH0_AUDIENCE_URI,
       responseType: "token id_token",
       scope: "openid profile email"
     });
+
+    localStorage.setItem("access_token", null);
+    localStorage.setItem("id_token", null);
+    localStorage.setItem("expires_at", null);
   }
 
   login = () => {
@@ -41,7 +46,7 @@ export default class Auth {
 
   isAuthenticated() {
     const expiresAt = JSON.parse(localStorage.getItem("expires_at"));
-    return new Date().getTime() < expiresAt;
+    return new Date().getTime() < (!expiresAt ? 0 : expiresAt);
   }
 
   logout = () => {
