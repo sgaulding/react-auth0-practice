@@ -23,19 +23,36 @@ const app = express();
 
 app.get("/public", function(req, res) {
   res.json({
-    message: "Hello from Public"
+    message: "Hello from Public API"
   });
 });
 
 app.get("/private", checkJwt, function(req, res) {
   res.json({
-    message: "Hello from Private"
+    message: "Hello from Private API"
   });
 });
 
 app.get("/course", checkJwt, checkScope(["read:courses"]), function(req, res) {
   res.json({
     courses: [{ id: 1, title: "Build Apps" }, { id: 2, title: "Create Apps" }]
+  });
+});
+
+function checkRole(role) {
+  return function(request, response, next) {
+    const assignedRoles = request.user["http://localhost:3000/roles"];
+    if (Array.isArray(assignedRoles) && assignedRoles.includes(role)) {
+      return next();
+    } else {
+      return response.status(401).send("Insufficient role");
+    }
+  };
+}
+
+app.get("/admin", checkJwt, checkRole("admin"), function(req, res) {
+  res.json({
+    message: "Hello from Admin API"
   });
 });
 
