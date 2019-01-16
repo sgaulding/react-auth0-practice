@@ -8,6 +8,7 @@ import Callback from "./Callback";
 import Public from "./Public";
 import Private from "./Private";
 import Courses from "./Courses";
+import PrivateRoute from "./PrivateRoute";
 
 class App extends Component {
   constructor(props) {
@@ -16,8 +17,6 @@ class App extends Component {
   }
 
   render() {
-    const { isAuthenticated, login, userHasScopes } = this.auth;
-
     return (
       <>
         <Nav auth={this.auth} />
@@ -32,35 +31,13 @@ class App extends Component {
             render={props => <Callback auth={this.auth} {...props} />}
           />
           <Route path="/public" component={Public} />
-          <Route
-            path="/profile"
-            render={props =>
-              isAuthenticated() ? (
-                <Profile auth={this.auth} {...props} />
-              ) : (
-                <Redirect to="/" />
-              )
-            }
-          />
-          <Route
-            path="/private"
-            render={props =>
-              isAuthenticated() ? (
-                <Private auth={this.auth} {...props} />
-              ) : (
-                login()
-              )
-            }
-          />
-          <Route
+          <PrivateRoute path="/profile" auth={this.auth} component={Profile} />
+          <PrivateRoute path="/private" auth={this.auth} component={Private} />
+          <PrivateRoute
             path="/courses"
-            render={props =>
-              isAuthenticated() && userHasScopes(["read:courses"]) ? (
-                <Courses auth={this.auth} {...props} />
-              ) : (
-                login()
-              )
-            }
+            component={Courses}
+            auth={this.auth}
+            scopes={["read:courses"]}
           />
         </div>
       </>
