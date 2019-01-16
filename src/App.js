@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Route, Redirect } from "react-router-dom";
 import Home from "./Home";
 import Profile from "./Profile";
 import Nav from "./Nav";
@@ -9,38 +8,33 @@ import Public from "./Public";
 import Private from "./Private";
 import Courses from "./Courses";
 import PrivateRoute from "./PrivateRoute";
+import PublicRoute from "./PublicRoute";
+import AuthContext from "./AuthContext";
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.auth = new Auth(this.props.history);
+    this.state = { auth: new Auth(this.props.history) };
   }
 
   render() {
+    const { auth } = this.state;
     return (
-      <>
-        <Nav auth={this.auth} />
+      <AuthContext.Provider value={auth}>
+        <Nav auth={auth} />
         <div className="body">
-          <Route
-            path="/"
-            exact
-            render={props => <Home auth={this.auth} {...props} />}
-          />
-          <Route
-            path="/callback"
-            render={props => <Callback auth={this.auth} {...props} />}
-          />
-          <Route path="/public" component={Public} />
-          <PrivateRoute path="/profile" auth={this.auth} component={Profile} />
-          <PrivateRoute path="/private" auth={this.auth} component={Private} />
+          <PublicRoute path="/" exact component={Home} />
+          <PublicRoute path="/callback" component={Callback} />
+          <PublicRoute path="/public" component={Public} />
+          <PrivateRoute path="/profile" component={Profile} />
+          <PrivateRoute path="/private" component={Private} />
           <PrivateRoute
             path="/courses"
             component={Courses}
-            auth={this.auth}
             scopes={["read:courses"]}
           />
         </div>
-      </>
+      </AuthContext.Provider>
     );
   }
 }

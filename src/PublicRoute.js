@@ -3,15 +3,13 @@ import { Route } from "react-router-dom";
 import PropTypes from "prop-types";
 import AuthContext from "./AuthContext";
 
-function PrivateRoute({ component: Component, scopes, ...rest }) {
+function PublicRoute({ component: Component, scopes, ...rest }) {
   return (
     <AuthContext.Consumer>
       {auth => (
         <Route
           {...rest}
           render={props => {
-            if (!auth.isAuthenticated()) return auth.login();
-
             if (scopes.length > 0 && !auth.userHasScopes(scopes)) {
               return (
                 <h1>
@@ -29,13 +27,13 @@ function PrivateRoute({ component: Component, scopes, ...rest }) {
   );
 }
 
-PrivateRoute.propTypes = {
+PublicRoute.propTypes = {
   component: PropTypes.func.isRequired,
   scopes: PropTypes.array
 };
 
-PrivateRoute.defaultProps = {
+PublicRoute.defaultProps = {
   scopes: []
 };
 
-export default PrivateRoute;
+export default PublicRoute;
