@@ -12,11 +12,13 @@ class Nav extends Component {
             <Link to="/">Home</Link>
           </li>
           <li>
-            <Link to="/profile">Profile</Link>
-          </li>
-          <li>
             <Link to="/public">Public</Link>
           </li>
+          {isAuthenticated() && (
+            <li>
+              <Link to="/profile">Profile</Link>
+            </li>
+          )}
           {isAuthenticated() && (
             <li>
               <Link to="/private">Private</Link>
