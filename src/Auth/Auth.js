@@ -4,23 +4,18 @@ export default class Auth {
   constructor(history) {
     this.history = history;
     this.userProfile = null;
+    this.requestedScopes = "openid profile email read:courses";
     this.auth0 = new auth0.WebAuth({
       domain: process.env.REACT_APP_AUTH0_DOMAIN,
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
       redirect_uri: process.env.REACT_APP_AUTH0_REDIRECT_URI,
       audience: process.env.REACT_APP_AUTH0_AUDIENCE_URI,
       responseType: "token id_token",
-      scope: "openid profile email"
+      scope: this.requestedScopes
     });
-
-    localStorage.setItem("access_token", null);
-    localStorage.setItem("id_token", null);
-    localStorage.setItem("expires_at", null);
   }
 
-  login = () => {
-    this.auth0.authorize();
-  };
+  login = () => this.auth0.authorize();
 
   handleAuthentication = () => {
     this.auth0.parseHash((err, authResult) => {
@@ -39,20 +34,24 @@ export default class Auth {
       authResult.expiresIn * 1000 + new Date().getTime()
     );
 
+    const scopes = authResult.scope || this.requestedScopes || "";
+
     localStorage.setItem("access_token", authResult.accessToken);
     localStorage.setItem("id_token", authResult.idToken);
     localStorage.setItem("expires_at", expiresAt);
+    localStorage.setItem("scopes", JSON.stringify(scopes));
   };
 
-  isAuthenticated() {
-    const expiresAt = JSON.parse(localStorage.getItem("expires_at"));
-    return new Date().getTime() < (!expiresAt ? 0 : expiresAt);
-  }
+  isAuthenticated = () => {
+    const expiresAt = JSON.parse(localStorage.getItem("expires_at")) || 0;
+    return new Date().getTime() < expiresAt;
+  };
 
   logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("id_token");
     localStorage.removeItem("expires_at");
+    localStorage.removeItem("scopes");
     this.userProfile = null;
     this.auth0.logout({
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
@@ -74,5 +73,12 @@ export default class Auth {
       if (profile) this.userProfile = profile;
       getProfileCallBack(profile, err);
     });
+  };
+
+  userHasScopes = scopes => {
+    const grantedScopes = (
+      JSON.parse(localStorage.getItem("scopes")) || ""
+    ).split(" ");
+    return scopes.every(scope => grantedScopes.includes(scope));
   };
 }

@@ -5,8 +5,9 @@ const auth0Audience = process.env.REACT_APP_AUTH0_AUDIENCE_URI;
 const express = require("express");
 const jwt = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
+const checkScope = require("express-jwt-authz");
 
-var checkJwt = jwt({
+const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,
     rateLimit: true,
@@ -29,6 +30,12 @@ app.get("/public", function(req, res) {
 app.get("/private", checkJwt, function(req, res) {
   res.json({
     message: "Hello from Private"
+  });
+});
+
+app.get("/course", checkJwt, checkScope(["read:courses"]), function(req, res) {
+  res.json({
+    courses: [{ id: 1, title: "Build Apps" }, { id: 2, title: "Create Apps" }]
   });
 });
 
